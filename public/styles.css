@@ -1,0 +1,19 @@
+body {
+  background: radial-gradient(circle at top, #0ff, #000);
+  font-family: system-ui;
+  color: white;
+}
+.glass {
+  backdrop-filter: blur(20px);
+  background: rgba(255,255,255,0.1);
+  padding: 2rem;
+  border-radius: 20px;
+  width: 300px;
+  margin: 20vh auto;
+}
+button {
+  background: linear-gradient(90deg,#0ff,#f0f);
+  border: none;
+  padding: 10px;
+  width: 100%;
+}
