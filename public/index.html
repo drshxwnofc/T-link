@@ -26,7 +26,7 @@
   }
   h2 { text-align: center; margin-bottom: 1rem; }
   .tabs { display: flex; justify-content: space-around; margin-bottom: 1rem; cursor: pointer; }
-  .tabs div { padding: 0.5rem 1rem; border-radius: 8px; }
+  .tabs div { padding: 0.5rem 1rem; border-radius: 8px; user-select: none; }
   .tabs .active { background: rgba(0,255,255,0.3); }
   input { width: 100%; padding: 0.5rem; margin: 0.5rem 0; border-radius: 8px; border: none; outline: none; }
   button {
@@ -51,15 +51,15 @@
 <div class="container">
   <h2>T-Link</h2>
   <div class="tabs">
-    <div id="signin-tab" class="active" onclick="showTab('signin')">Sign In</div>
-    <div id="signup-tab" onclick="showTab('signup')">Sign Up</div>
+    <div id="signin-tab" class="active">Sign In</div>
+    <div id="signup-tab">Sign Up</div>
   </div>
 
   <!-- Sign In Form -->
   <div id="signin-form">
     <input type="email" id="signin-email" placeholder="Email" required>
     <input type="password" id="signin-password" placeholder="Password" required>
-    <button onclick="signin()">Sign In</button>
+    <button id="signin-btn">Sign In</button>
     <div id="signin-message"></div>
   </div>
 
@@ -67,91 +67,100 @@
   <div id="signup-form" style="display:none;">
     <input type="email" id="signup-email" placeholder="Email" required>
     <input type="password" id="signup-password" placeholder="Password" required>
-    <button onclick="signup()">Sign Up</button>
+    <button id="signup-btn">Sign Up</button>
     <div id="signup-message"></div>
   </div>
 </div>
 
 <script type="module">
-function showTab(tab) {
-  if(tab === 'signin') {
-    document.getElementById('signin-form').style.display = 'block';
-    document.getElementById('signup-form').style.display = 'none';
-    document.getElementById('signin-tab').classList.add('active');
-    document.getElementById('signup-tab').classList.remove('active');
-  } else {
-    document.getElementById('signin-form').style.display = 'none';
-    document.getElementById('signup-form').style.display = 'block';
-    document.getElementById('signin-tab').classList.remove('active');
-    document.getElementById('signup-tab').classList.add('active');
-  }
-}
+const signinTab = document.getElementById('signin-tab');
+const signupTab = document.getElementById('signup-tab');
+const signinForm = document.getElementById('signin-form');
+const signupForm = document.getElementById('signup-form');
+const signinMsg = document.getElementById('signin-message');
+const signupMsg = document.getElementById('signup-message');
+
+signinTab.addEventListener('click', () => {
+  signinForm.style.display = 'block';
+  signupForm.style.display = 'none';
+  signinTab.classList.add('active');
+  signupTab.classList.remove('active');
+  signinMsg.textContent = '';
+});
+
+signupTab.addEventListener('click', () => {
+  signinForm.style.display = 'none';
+  signupForm.style.display = 'block';
+  signinTab.classList.remove('active');
+  signupTab.classList.add('active');
+  signupMsg.textContent = '';
+});
 
 // SIGN IN FUNCTION
-async function signin() {
+document.getElementById('signin-btn').addEventListener('click', async () => {
   const email = document.getElementById('signin-email').value;
   const password = document.getElementById('signin-password').value;
-  const msg = document.getElementById('signin-message');
+  signinMsg.textContent = '';
 
-  msg.textContent = '';
-  if(!email || !password) { msg.textContent = 'Enter email and password'; return; }
+  if (!email || !password) { signinMsg.textContent = 'Enter email and password'; return; }
 
   try {
     const res = await fetch('/api/auth', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
 
-    if(res.status === 200) {
+    if (res.status === 200) {
       localStorage.setItem('tlink_token', data.token);
       localStorage.setItem('tlink_role', data.role);
       localStorage.setItem('tlink_coins', data.coins);
-      msg.style.color = '#00ffcc';
-      msg.textContent = 'Signed in! Redirecting...';
+      signinMsg.style.color = '#00ffcc';
+      signinMsg.textContent = 'Signed in! Redirecting...';
       setTimeout(() => { window.location.href = '/app.html'; }, 1000);
     } else {
-      msg.style.color = '#ff6f6f';
-      msg.textContent = data || 'Sign in failed';
+      signinMsg.style.color = '#ff6f6f';
+      signinMsg.textContent = data || 'Sign in failed';
     }
-  } catch(e) {
-    msg.style.color = '#ff6f6f';
-    msg.textContent = 'Error signing in';
+  } catch (e) {
+    signinMsg.style.color = '#ff6f6f';
+    signinMsg.textContent = 'Error signing in';
     console.error(e);
   }
-}
+});
 
 // SIGN UP FUNCTION
-async function signup() {
+document.getElementById('signup-btn').addEventListener('click', async () => {
   const email = document.getElementById('signup-email').value;
   const password = document.getElementById('signup-password').value;
-  const msg = document.getElementById('signup-message');
+  signupMsg.textContent = '';
 
-  msg.textContent = '';
-  if(!email || !password) { msg.textContent = 'Enter email and password'; return; }
+  if (!email || !password) { signupMsg.textContent = 'Enter email and password'; return; }
 
   try {
     const res = await fetch('/api/signup', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
 
-    if(res.status === 200) {
-      msg.style.color = '#00ffcc';
-      msg.textContent = 'Sign up successful! You can now sign in.';
-      showTab('signin');
+    if (res.status === 200) {
+      signupMsg.style.color = '#00ffcc';
+      signupMsg.textContent = 'Sign up successful! You can now sign in.';
+      signinTab.click(); // Switch to sign in
     } else {
-      msg.style.color = '#ff6f6f';
-      msg.textContent = data || 'Sign up failed';
+      signupMsg.style.color = '#ff6f6f';
+      signupMsg.textContent = data || 'Sign up failed';
     }
-  } catch(e) {
-    msg.style.color = '#ff6f6f';
-    msg.textContent = 'Error signing up';
+  } catch (e) {
+    signupMsg.style.color = '#ff6f6f';
+    signupMsg.textContent = 'Error signing up';
     console.error(e);
   }
-}
+});
 </script>
 
 </body>
-  </html>
+</html>
