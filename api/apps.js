@@ -1,21 +1,16 @@
 let APPS = [];
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') {
-    return res.json(APPS);
-  }
+  if (req.method === 'GET') return res.json(APPS);
 
   if (req.method === 'POST') {
-    const { name } = JSON.parse(req.body);
-    const app = {
+    const { name, code } = JSON.parse(req.body);
+    APPS.push({
       id: crypto.randomUUID(),
       name,
-      status: 'stopped',
-      created_at: Date.now()
-    };
-    APPS.push(app);
-    return res.json(app);
+      code,
+      status: 'ready'
+    });
+    return res.json({ success: true });
   }
-
-  res.status(405).end();
 }
