@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>T-Link Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="glass">
+    <h2>T-Link</h2>
+    <span id="coins">🪙 0</span>
+  </header>
+
+  <main class="glass">
+    <h3>Your Apps</h3>
+    <div id="apps"></div>
+
+    <h3>Import from GitHub</h3>
+    <input id="repo" placeholder="https://github.com/user/repo">
+    <button onclick="importRepo()">Import</button>
+  </main>
+
+<script type="module">
+async function loadApps() {
+  const res = await fetch('/api/apps');
+  const data = await res.json();
+  apps.innerHTML = data.map(a =>
+    `<div class="card">${a.name} — ${a.status}</div>`
+  ).join('');
+}
+
+async function importRepo() {
+  await fetch('/api/github', {
+    method: 'POST',
+    body: JSON.stringify({ repo: repo.value })
+  });
+  loadApps();
+}
+
+loadApps();
+</script>
+</body>
+</html>
