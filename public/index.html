@@ -116,6 +116,7 @@ document.getElementById('signin-btn').addEventListener('click', async () => {
       localStorage.setItem('tlink_token', data.token);
       localStorage.setItem('tlink_role', data.role);
       localStorage.setItem('tlink_coins', data.coins);
+      localStorage.setItem('tlink_email', email);
       signinMsg.style.color = '#00ffcc';
       signinMsg.textContent = 'Signed in! Redirecting...';
       setTimeout(() => { window.location.href = '/app.html'; }, 1000);
