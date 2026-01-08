@@ -1,22 +1,22 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+// /api/github.js
+export default async function handler(req) {
+  if (req.method !== 'POST') return new Response('Method Not Allowed', { status: 405 });
 
-  const { repo } = JSON.parse(req.body);
-  if (!repo.startsWith('https://github.com/')) {
-    return res.status(400).json({ error: 'Invalid repo URL' });
-  }
-
-  // Metadata-only import (safe)
-  const parts = repo.replace('https://github.com/', '').split('/');
-  const [owner, name] = parts;
-
-  // In real version, store in DB
-  res.json({
-    success: true,
-    app: {
-      name,
-      owner,
-      status: 'imported'
+  try {
+    const { repo } = await req.json();
+    if (!repo || !repo.startsWith('https://github.com/')) {
+      return new Response('Invalid repo URL', { status: 400 });
     }
-  });
+
+    const parts = repo.split('/').slice(-2);
+    const name = parts.join('/');
+
+    // Return metadata-only (safe)
+    return new Response(JSON.stringify({ imported: true, name }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (err) {
+    return new Response('GitHub import error', { status: 500 });
+  }
 }
