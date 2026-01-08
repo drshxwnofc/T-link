@@ -1,22 +1,23 @@
-import { NextResponse } from 'next/server';
-
-const RATE = new Map();
-
-export function middleware(req) {
-  const ip = req.ip || 'unknown';
+export default async function middleware(req) {
+  const ip = req.headers['x-forwarded-for'] || 'unknown';
   const now = Date.now();
 
-  const data = RATE.get(ip) || { count: 0, time: now };
+  // Simple rate-limit example
+  if (!global.RATE_LIMIT) global.RATE_LIMIT = {};
+  const data = global.RATE_LIMIT[ip] || { count: 0, time: now };
+
   if (now - data.time < 10000) {
     data.count++;
     if (data.count > 50) {
-      return new NextResponse('Rate limited', { status: 429 });
+      return new Response('Rate limited', { status: 429 });
     }
   } else {
     data.count = 1;
     data.time = now;
   }
 
-  RATE.set(ip, data);
-  return NextResponse.next();
+  global.RATE_LIMIT[ip] = data;
+
+  // Must return a Response
+  return new Response(null, { status: 200 });
 }
